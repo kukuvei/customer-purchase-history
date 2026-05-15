@@ -23,7 +23,10 @@
         <div>
           <p class="mb-2 inline-flex rounded-full bg-white/10 px-3 py-1 text-sm text-slate-200 ring-1 ring-white/15">Dashboard Sales Visit</p>
           <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">History Pembelian Customer</h1>
-          <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">Admin upload data pembelian mingguan. Sales pilih toko saat kunjungan untuk melihat item yang pernah dibeli, tanggal terakhir beli, qty terakhir, frekuensi pembelian, dan checklist pengecekan fisik.</p>
+          <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+            Admin upload data pembelian mingguan. Sales pilih toko saat kunjungan untuk melihat item yang pernah dibeli,
+            tanggal terakhir beli, qty terakhir, frekuensi pembelian, dan checklist pengecekan fisik.
+          </p>
         </div>
         <div class="rounded-2xl bg-white/10 p-3 text-sm text-slate-200 ring-1 ring-white/15">
           <div>Status koneksi: <span id="connectionStatus" class="font-semibold text-amber-200">Belum tersambung</span></div>
@@ -44,7 +47,9 @@
         </label>
         <button id="connectSupabaseBtn" class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">Connect</button>
       </div>
-      <p class="mt-3 text-xs leading-5 text-slate-500">Nilai URL dan publishable/anon key boleh ada di HTML/browser. Jangan pernah menaruh Supabase service role key di HTML/browser.</p>
+      <p class="mt-3 text-xs leading-5 text-slate-500">
+        Nilai URL dan publishable/anon key boleh ada di HTML/browser. Jangan pernah menaruh Supabase service role key di HTML/browser.
+      </p>
     </section>
 
     <section class="mb-5 flex flex-wrap gap-2">
@@ -56,28 +61,26 @@
       <div class="mb-5 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <h2 class="text-lg font-semibold">Filter Kunjungan</h2>
-          <p class="mt-1 text-sm text-slate-500">Pilih sales dan toko yang akan dikunjungi.</p>
+          <p class="mt-1 text-sm text-slate-500">Pilih toko dan jenis history order yang ingin dilihat.</p>
 
           <div class="mt-4 grid gap-3">
-            <label class="block">
-              <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Sales</span>
-              <select id="salesSelect" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"></select>
-            </label>
             <label class="block">
               <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Toko / Customer</span>
               <select id="customerSelect" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"></select>
             </label>
+
             <label class="block">
               <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Cari Item</span>
               <input id="itemSearch" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" placeholder="Contoh: minyak, gula, beras" />
             </label>
+
             <label class="block">
-              <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Urutan</span>
-              <select id="sortSelect" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100">
-                <option value="recent">Terakhir dibeli</option>
-                <option value="qty">Total qty terbesar</option>
-                <option value="frequency">Frekuensi paling sering</option>
-                <option value="name">Nama item A-Z</option>
+              <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Jenis History Order</span>
+              <select id="historyTypeSelect" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100">
+                <option value="last_order">Last order history</option>
+                <option value="inactive">Barang yang sudah tidak di-order lagi</option>
+                <option value="favorite">Barang favorit di-order</option>
+                <option value="rare">Barang paling jarang di-order</option>
               </select>
             </label>
           </div>
@@ -114,12 +117,14 @@
             <button id="exportChecklistBtn" class="rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">Export Checklist CSV</button>
           </div>
         </div>
+
         <div class="soft-scroll overflow-x-auto">
           <table class="min-w-full divide-y divide-slate-200 text-sm">
             <thead class="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
                 <th class="px-5 py-3">Cek</th>
                 <th class="px-5 py-3">Item</th>
+                <th class="px-5 py-3">Status</th>
                 <th class="px-5 py-3">Terakhir Beli</th>
                 <th class="px-5 py-3 text-right">Qty Terakhir</th>
                 <th class="px-5 py-3 text-right">Total Qty</th>
@@ -138,7 +143,9 @@
       <div class="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
         <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <h2 class="text-lg font-semibold">Upload Data Mingguan</h2>
-          <p class="mt-1 text-sm leading-6 text-slate-500">Upload file Excel atau CSV. Sistem akan membaca sheet pertama, lalu admin bisa mapping kolom sebelum menyimpan ke Supabase.</p>
+          <p class="mt-1 text-sm leading-6 text-slate-500">
+            Upload file Excel atau CSV. Sistem akan membaca sheet pertama, lalu admin bisa mapping kolom sebelum menyimpan ke Supabase.
+          </p>
 
           <label class="mt-5 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center transition hover:border-indigo-400 hover:bg-indigo-50">
             <span class="text-base font-semibold text-slate-800">Pilih file Excel / CSV</span>
@@ -151,6 +158,7 @@
               <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Batch / Periode Upload</span>
               <input id="batchName" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" placeholder="Contoh: Minggu 2 Mei 2026" />
             </label>
+
             <label class="block">
               <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Mode Simpan</span>
               <select id="saveMode" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100">
@@ -166,7 +174,10 @@
             <button id="saveToSupabaseBtn" class="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300">Simpan ke Supabase</button>
             <button id="useUploadAsDemoBtn" class="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Pakai di Browser Saja</button>
           </div>
-          <div id="adminMessage" class="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">Belum ada file yang diproses.</div>
+
+          <div id="adminMessage" class="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+            Belum ada file yang diproses.
+          </div>
         </div>
 
         <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
@@ -223,7 +234,10 @@ create policy "allow anon delete by batch"
   on public.sales_purchase_history
   for delete
   using (true);</code></pre>
-        <p class="mt-3 text-xs leading-5 text-amber-700">Catatan: policy di atas dibuat praktis untuk prototype. Untuk produksi, sebaiknya admin memakai Supabase Auth, lalu policy insert/delete hanya diberikan kepada role admin.</p>
+        <p class="mt-3 text-xs leading-5 text-amber-700">
+          Catatan: policy di atas dibuat praktis untuk prototype. Untuk produksi, sebaiknya admin memakai Supabase Auth,
+          lalu policy insert/delete hanya diberikan kepada role admin.
+        </p>
       </div>
     </section>
   </main>
@@ -236,6 +250,8 @@ create policy "allow anon delete by batch"
       supabaseUrl: "sales_dashboard_supabase_url",
       supabaseAnonKey: "sales_dashboard_supabase_anon_key"
     };
+
+    const INACTIVE_ORDER_DAYS = 60;
 
     const demoRows = [
       { sales_name: "Andi", customer_name: "Toko Sinar Jaya", transaction_date: "2026-04-25", item_name: "Beras Premium 5kg", qty: 12, invoice_no: "INV-001", sales_value: 780000 },
@@ -254,22 +270,28 @@ create policy "allow anon delete by batch"
         "sales", "nama sales", "salesman", "nama salesman", "sales person", "sales rep", "kode sales", "marketing", "spg", "nama spg", "user", "pic", "spv", "asm"
       ],
       customer_name: [
-        "customer", "nama customer", "customer name", "cust", "nama cust", "cust name", "kode customer", "kode cust", "toko", "nama toko", "kode toko", "outlet", "nama outlet", "kode outlet", "pelanggan", "nama pelanggan", "store", "nama store", "ship to", "bill to", "member", "nama member", "channel", "sub customer"
+        "customer", "nama customer", "customer name", "cust", "nama cust", "cust name", "kode customer", "kode cust", "toko", "nama toko", "kode toko", "outlet",
+        "nama outlet", "kode outlet", "pelanggan", "nama pelanggan", "store", "nama store", "ship to", "bill to", "member", "nama member", "channel", "sub customer"
       ],
       transaction_date: [
-        "tanggal", "tgl", "date", "transaction date", "tanggal transaksi", "tgl transaksi", "tanggal invoice", "tgl invoice", "invoice date", "tanggal faktur", "tgl faktur", "order date", "tanggal order", "tgl order", "posting date", "delivery date", "doc date", "document date", "periode", "tanggal nota", "tgl nota"
+        "tanggal", "tgl", "date", "transaction date", "tanggal transaksi", "tgl transaksi", "tanggal invoice", "tgl invoice", "invoice date", "tanggal faktur",
+        "tgl faktur", "order date", "tanggal order", "tgl order", "posting date", "delivery date", "doc date", "document date", "periode", "tanggal nota", "tgl nota"
       ],
       item_name: [
-        "item", "nama item", "item name", "kode item", "produk", "nama produk", "product", "product name", "barang", "nama barang", "kode barang", "sku", "description", "deskripsi", "nama sku", "material", "nama material", "article", "nama article", "variant", "nama variant"
+        "item", "nama item", "item name", "kode item", "produk", "nama produk", "product", "product name", "barang", "nama barang", "kode barang", "sku",
+        "description", "deskripsi", "nama sku", "material", "nama material", "article", "nama article", "variant", "nama variant"
       ],
       qty: [
-        "qty", "quantity", "jumlah", "jumlah qty", "kuantitas", "pcs", "pc", "ctn", "carton", "dus", "box", "ambil", "order qty", "qty order", "qty jual", "qty sales", "sold qty", "volume", "total qty", "jumlah beli", "qty beli"
+        "qty", "quantity", "jumlah", "jumlah qty", "kuantitas", "pcs", "pc", "ctn", "carton", "dus", "box", "ambil", "order qty", "qty order", "qty jual",
+        "qty sales", "sold qty", "volume", "total qty", "jumlah beli", "qty beli"
       ],
       invoice_no: [
-        "invoice", "no invoice", "nomor invoice", "invoice no", "invoice number", "faktur", "no faktur", "nomor faktur", "nota", "no nota", "nomor nota", "order no", "so", "no so", "nomor", "doc no", "document no", "no dokumen"
+        "invoice", "no invoice", "nomor invoice", "invoice no", "invoice number", "faktur", "no faktur", "nomor faktur", "nota", "no nota", "nomor nota",
+        "order no", "so", "no so", "nomor", "doc no", "document no", "no dokumen"
       ],
       sales_value: [
-        "nilai", "amount", "total", "net", "nett", "subtotal", "grand total", "harga", "rupiah", "sales value", "value", "total value", "total harga", "nilai jual", "gross", "net sales", "dpp"
+        "nilai", "amount", "total", "net", "nett", "subtotal", "grand total", "harga", "rupiah", "sales value", "value", "total value", "total harga",
+        "nilai jual", "gross", "net sales", "dpp"
       ]
     };
 
@@ -305,7 +327,12 @@ create policy "allow anon delete by batch"
     function parseNumber(value) {
       if (typeof value === "number") return Number.isFinite(value) ? value : 0;
       if (!value) return 0;
-      const cleaned = String(value).replace(/rp/gi, "").replace(/\s/g, "").replace(/\./g, "").replace(/,/g, ".").replace(/[^0-9.-]/g, "");
+      const cleaned = String(value)
+        .replace(/rp/gi, "")
+        .replace(/\s/g, "")
+        .replace(/\./g, "")
+        .replace(/,/g, ".")
+        .replace(/[^0-9.-]/g, "");
       const parsed = Number(cleaned);
       return Number.isFinite(parsed) ? parsed : 0;
     }
@@ -321,10 +348,13 @@ create policy "allow anon delete by batch"
       if (!value && value !== 0) return null;
       if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
       if (typeof value === "number") return excelSerialToDate(value);
+
       const text = String(value).trim();
       if (!text) return null;
+
       const iso = new Date(text);
       if (!Number.isNaN(iso.getTime())) return iso;
+
       const parts = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
       if (parts) {
         const day = Number(parts[1]);
@@ -334,6 +364,7 @@ create policy "allow anon delete by batch"
         const parsed = new Date(year, month, day);
         if (!Number.isNaN(parsed.getTime())) return parsed;
       }
+
       return null;
     }
 
@@ -362,10 +393,12 @@ create policy "allow anon delete by batch"
 
     function detectColumn(headers, candidates) {
       const normalized = headers.map((header) => ({ raw: header, normalized: normalizeText(header) }));
+
       for (const candidate of candidates) {
         const exact = normalized.find((header) => header.normalized === candidate);
         if (exact) return exact.raw;
       }
+
       for (const candidate of candidates) {
         const wordMatch = normalized.find((header) => {
           const headerWords = ` ${header.normalized} `;
@@ -374,26 +407,30 @@ create policy "allow anon delete by batch"
         });
         if (wordMatch) return wordMatch.raw;
       }
+
       return "";
     }
 
     function scoreHeaderRow(cells) {
       const headers = cells.map((cell) => String(cell || "").trim()).filter(Boolean);
       if (!headers.length) return 0;
+
       let score = 0;
       Object.values(candidateMap).forEach((candidates) => {
         if (detectColumn(headers, candidates)) score += 1;
       });
+
       return score;
     }
 
     function rowsFromWorksheetSmart(worksheet) {
       const matrix = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: true });
-      if (!matrix.length) return { headers: [], dataRows: [] };
+      if (!matrix.length) return { headers: [], dataRows: [], headerRowNumber: 0, score: 0 };
 
       let bestHeaderIndex = 0;
       let bestScore = -1;
       const maxScan = Math.min(matrix.length, 15);
+
       for (let i = 0; i < maxScan; i += 1) {
         const score = scoreHeaderRow(matrix[i]);
         if (score > bestScore) {
@@ -414,7 +451,8 @@ create policy "allow anon delete by batch"
         return count ? `${header} ${count + 1}` : header;
       });
 
-      const dataRows = matrix.slice(bestHeaderIndex + 1)
+      const dataRows = matrix
+        .slice(bestHeaderIndex + 1)
         .filter((line) => line.some((cell) => String(cell ?? "").trim() !== ""))
         .map((line) => {
           const row = {};
@@ -424,7 +462,12 @@ create policy "allow anon delete by batch"
           return row;
         });
 
-      return { headers, dataRows, headerRowNumber: bestHeaderIndex + 1, score: bestScore };
+      return {
+        headers,
+        dataRows,
+        headerRowNumber: bestHeaderIndex + 1,
+        score: bestScore
+      };
     }
 
     function escapeHtml(value) {
@@ -442,15 +485,22 @@ create policy "allow anon delete by batch"
     }
 
     function showAdminMessage(message, type = "info") {
-      const color = type === "error" ? "bg-rose-50 text-rose-800" : type === "success" ? "bg-emerald-50 text-emerald-800" : "bg-slate-50 text-slate-600";
+      const color = type === "error"
+        ? "bg-rose-50 text-rose-800"
+        : type === "success"
+          ? "bg-emerald-50 text-emerald-800"
+          : "bg-slate-50 text-slate-600";
+
       $("adminMessage").className = `mt-4 rounded-2xl p-4 text-sm leading-6 ${color}`;
       $("adminMessage").textContent = message;
     }
 
     function setTab(active) {
       const isSales = active === "sales";
+
       $("salesView").classList.toggle("hidden-view", !isSales);
       $("adminView").classList.toggle("hidden-view", isSales);
+
       $("salesTabBtn").className = `${isSales ? "tab-active" : "tab-inactive ring-1 ring-slate-200 hover:bg-slate-50"} rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition`;
       $("adminTabBtn").className = `${!isSales ? "tab-active" : "tab-inactive ring-1 ring-slate-200 hover:bg-slate-50"} rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition`;
     }
@@ -474,7 +524,9 @@ create policy "allow anon delete by batch"
       try {
         localStorage.setItem(STORAGE_KEYS.supabaseUrl, url);
         localStorage.setItem(STORAGE_KEYS.supabaseAnonKey, anonKey);
+
         supabaseClient = window.supabase.createClient(url, anonKey);
+
         setConnectionStatus("Mengecek...", "font-semibold text-amber-200");
         await loadDataFromSupabase();
       } catch (error) {
@@ -502,7 +554,12 @@ create policy "allow anon delete by batch"
         if (error) throw error;
 
         rows = data && data.length ? data : [...demoRows];
-        setConnectionStatus(data && data.length ? "Tersambung" : "Tersambung, data kosong", "font-semibold text-emerald-200");
+
+        setConnectionStatus(
+          data && data.length ? "Tersambung" : "Tersambung, data kosong",
+          "font-semibold text-emerald-200"
+        );
+
         renderAll();
       } catch (error) {
         console.error("Gagal mengambil data Supabase:", error);
@@ -518,31 +575,19 @@ create policy "allow anon delete by batch"
     }
 
     function populateFilters() {
-      const selectedSales = $("salesSelect").value || "Semua sales";
       const selectedCustomer = $("customerSelect").value;
-      const salesOptions = ["Semua sales", ...uniqueSorted(rows.map((row) => row.sales_name || "Tidak ada sales"))];
-
-      $("salesSelect").innerHTML = salesOptions.map((sales) => `<option value="${escapeHtml(sales)}">${escapeHtml(sales)}</option>`).join("");
-      $("salesSelect").value = salesOptions.includes(selectedSales) ? selectedSales : "Semua sales";
-
-      const salesFilter = $("salesSelect").value;
-      const customerRows = salesFilter === "Semua sales" ? rows : rows.filter((row) => (row.sales_name || "Tidak ada sales") === salesFilter);
-      const customers = uniqueSorted(customerRows.map((row) => row.customer_name));
+      const customers = uniqueSorted(rows.map((row) => row.customer_name));
 
       $("customerSelect").innerHTML = customers.length
         ? customers.map((customer) => `<option value="${escapeHtml(customer)}">${escapeHtml(customer)}</option>`).join("")
         : `<option value="">Tidak ada toko</option>`;
+
       $("customerSelect").value = customers.includes(selectedCustomer) ? selectedCustomer : (customers[0] || "");
     }
 
     function getSelectedRows() {
-      const sales = $("salesSelect").value;
       const customer = $("customerSelect").value;
-      return rows.filter((row) => {
-        const salesMatch = sales === "Semua sales" || (row.sales_name || "Tidak ada sales") === sales;
-        const customerMatch = !customer || row.customer_name === customer;
-        return salesMatch && customerMatch;
-      });
+      return rows.filter((row) => !customer || row.customer_name === customer);
     }
 
     function buildSummary() {
@@ -570,6 +615,7 @@ create policy "allow anon delete by batch"
         const qty = parseNumber(row.qty);
         const value = parseNumber(row.sales_value);
         const date = parseDate(row.transaction_date);
+
         group.total_qty += qty;
         group.total_value += value;
         group.frequency += 1;
@@ -584,35 +630,98 @@ create policy "allow anon delete by batch"
 
       let summary = [...groups.values()];
       const query = normalizeText($("itemSearch").value);
-      if (query) summary = summary.filter((row) => normalizeText(row.item_name).includes(query));
 
-      const sortBy = $("sortSelect").value;
-      summary.sort((a, b) => {
-        if (sortBy === "qty") return b.total_qty - a.total_qty;
-        if (sortBy === "frequency") return b.frequency - a.frequency;
-        if (sortBy === "name") return a.item_name.localeCompare(b.item_name);
-        return (parseDate(b.last_date)?.getTime() || 0) - (parseDate(a.last_date)?.getTime() || 0);
-      });
+      if (query) {
+        summary = summary.filter((row) => normalizeText(row.item_name).includes(query));
+      }
+
+      const historyType = $("historyTypeSelect").value;
+
+      if (historyType === "inactive") {
+        summary = summary.filter((row) => {
+          const age = daysSince(row.last_date);
+          return age !== null && age >= INACTIVE_ORDER_DAYS;
+        });
+
+        summary.sort((a, b) => {
+          return (parseDate(a.last_date)?.getTime() || 0) - (parseDate(b.last_date)?.getTime() || 0);
+        });
+      } else if (historyType === "favorite") {
+        summary.sort((a, b) => {
+          if (b.frequency !== a.frequency) return b.frequency - a.frequency;
+          if (b.total_qty !== a.total_qty) return b.total_qty - a.total_qty;
+          return (parseDate(b.last_date)?.getTime() || 0) - (parseDate(a.last_date)?.getTime() || 0);
+        });
+      } else if (historyType === "rare") {
+        summary.sort((a, b) => {
+          if (a.frequency !== b.frequency) return a.frequency - b.frequency;
+          if (a.total_qty !== b.total_qty) return a.total_qty - b.total_qty;
+          return (parseDate(a.last_date)?.getTime() || 0) - (parseDate(b.last_date)?.getTime() || 0);
+        });
+      } else {
+        summary.sort((a, b) => {
+          return (parseDate(b.last_date)?.getTime() || 0) - (parseDate(a.last_date)?.getTime() || 0);
+        });
+      }
 
       return summary;
+    }
+
+    function getHistoryTypeLabel() {
+      const labels = {
+        last_order: "Last order history",
+        inactive: `Barang yang sudah tidak di-order lagi, minimal ${INACTIVE_ORDER_DAYS} hari`,
+        favorite: "Barang favorit di-order",
+        rare: "Barang paling jarang di-order"
+      };
+
+      return labels[$("historyTypeSelect").value] || labels.last_order;
+    }
+
+    function getItemStatus(row) {
+      const age = daysSince(row.last_date);
+      const historyType = $("historyTypeSelect").value;
+
+      if (age === null) {
+        return { label: "Tanggal belum terbaca", className: "bg-slate-100 text-slate-600" };
+      }
+
+      if (historyType === "favorite") {
+        return { label: `${row.frequency}x order`, className: "bg-emerald-100 text-emerald-700" };
+      }
+
+      if (historyType === "rare") {
+        return { label: `${row.frequency}x order`, className: "bg-amber-100 text-amber-700" };
+      }
+
+      if (age >= INACTIVE_ORDER_DAYS) {
+        return { label: `Tidak order ${age} hari`, className: "bg-rose-100 text-rose-700" };
+      }
+
+      return { label: `Order ${age} hari lalu`, className: "bg-indigo-100 text-indigo-700" };
     }
 
     function renderSalesTable() {
       const summary = buildSummary();
       const selectedRows = getSelectedRows();
-      const lastDate = selectedRows.map((row) => parseDate(row.transaction_date)).filter(Boolean).sort((a, b) => b - a)[0];
+
+      const lastDate = selectedRows
+        .map((row) => parseDate(row.transaction_date))
+        .filter(Boolean)
+        .sort((a, b) => b - a)[0];
+
       const totalValue = selectedRows.reduce((sum, row) => sum + parseNumber(row.sales_value), 0);
       const checkedCount = summary.filter((row) => checklistState[row.item_name]?.checked).length;
       const customer = $("customerSelect").value || "toko terpilih";
 
-      $("salesTableTitle").textContent = `Ringkasan item untuk ${customer}`;
+      $("salesTableTitle").textContent = `${getHistoryTypeLabel()} untuk ${customer}`;
       $("statItemCount").textContent = numberFormat.format(summary.length);
       $("statLastDate").textContent = lastDate ? formatDate(lastDate) : "-";
       $("statTotalValue").textContent = rupiah.format(totalValue);
       $("statChecked").textContent = `${numberFormat.format(checkedCount)} / ${numberFormat.format(summary.length)}`;
 
       if (!summary.length) {
-        $("itemSummaryBody").innerHTML = `<tr><td colspan="8" class="px-5 py-12 text-center text-slate-500">Tidak ada data untuk filter ini.</td></tr>`;
+        $("itemSummaryBody").innerHTML = `<tr><td colspan="9" class="px-5 py-12 text-center text-slate-500">Tidak ada data untuk filter ini.</td></tr>`;
         return;
       }
 
@@ -620,20 +729,29 @@ create policy "allow anon delete by batch"
         const checked = checklistState[row.item_name]?.checked;
         const note = checklistState[row.item_name]?.note || "";
         const age = daysSince(row.last_date);
+        const status = getItemStatus(row);
+
         return `
           <tr class="${checked ? "bg-emerald-50/60" : "hover:bg-slate-50"}">
             <td class="px-5 py-4 align-top">
               <button data-action="toggle-check" data-item="${escapeHtml(row.item_name)}" class="flex h-7 w-7 items-center justify-center rounded-lg border transition ${checked ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 bg-white text-transparent hover:border-indigo-400"}">✓</button>
             </td>
+
             <td class="px-5 py-4 align-top">
               <div class="font-medium text-slate-950">${escapeHtml(row.item_name)}</div>
               <div class="mt-1 text-xs text-slate-500">${age === null ? "Tanggal belum terbaca" : `${age} hari sejak pembelian terakhir`}</div>
             </td>
+
+            <td class="px-5 py-4 align-top">
+              <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${status.className}">${escapeHtml(status.label)}</span>
+            </td>
+
             <td class="px-5 py-4 align-top text-slate-700">${formatDate(row.last_date)}</td>
             <td class="px-5 py-4 text-right align-top font-medium text-slate-950">${numberFormat.format(row.last_qty)}</td>
             <td class="px-5 py-4 text-right align-top text-slate-700">${numberFormat.format(row.total_qty)}</td>
             <td class="px-5 py-4 text-right align-top text-slate-700">${numberFormat.format(row.frequency)}x</td>
             <td class="px-5 py-4 align-top text-slate-700">${escapeHtml(row.last_invoice || "-")}</td>
+
             <td class="px-5 py-4 align-top">
               <input data-action="update-note" data-item="${escapeHtml(row.item_name)}" value="${escapeHtml(note)}" placeholder="Contoh: stok tinggal 2, perlu reorder" class="min-w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" />
             </td>
@@ -648,6 +766,7 @@ create policy "allow anon delete by batch"
 
     function createMappingControls() {
       columnMap = {};
+
       Object.keys(candidateMap).forEach((key) => {
         columnMap[key] = detectColumn(uploadedHeaders, candidateMap[key]);
       });
@@ -665,9 +784,17 @@ create policy "allow anon delete by batch"
 
     function renderPreview() {
       $("previewInfo").textContent = `${numberFormat.format(uploadedRows.length)} baris terbaca. Preview menampilkan maksimal 10 baris pertama.`;
-      $("previewHead").innerHTML = `<tr>${uploadedHeaders.map((header) => `<th class="px-3 py-3">${escapeHtml(header)}</th>`).join("")}</tr>`;
+
+      $("previewHead").innerHTML = `
+        <tr>
+          ${uploadedHeaders.map((header) => `<th class="px-3 py-3">${escapeHtml(header)}</th>`).join("")}
+        </tr>
+      `;
+
       $("previewBody").innerHTML = uploadedRows.slice(0, 10).map((row) => `
-        <tr>${uploadedHeaders.map((header) => `<td class="whitespace-nowrap px-3 py-3 text-slate-700">${escapeHtml(row[header] ?? "")}</td>`).join("")}</tr>
+        <tr>
+          ${uploadedHeaders.map((header) => `<td class="whitespace-nowrap px-3 py-3 text-slate-700">${escapeHtml(row[header] ?? "")}</td>`).join("")}
+        </tr>
       `).join("");
     }
 
@@ -682,6 +809,7 @@ create policy "allow anon delete by batch"
 
       try {
         $("uploadFileName").textContent = file.name;
+
         const buffer = await file.arrayBuffer();
         const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -698,10 +826,17 @@ create policy "allow anon delete by batch"
         renderPreview();
 
         const missingAutoMap = ["customer_name", "transaction_date", "item_name", "qty"].filter((key) => !columnMap[key]);
+
         if (missingAutoMap.length) {
-          showAdminMessage(`File berhasil dibaca dari baris header ke-${parsed.headerRowNumber}, tetapi mapping wajib belum lengkap: ${missingAutoMap.map((key) => columnLabels[key]).join(", ")}. Pilih manual dropdown mapping di bawah area upload, lalu klik Simpan ke Supabase lagi.`, "error");
+          showAdminMessage(
+            `File berhasil dibaca dari baris header ke-${parsed.headerRowNumber}, tetapi mapping wajib belum lengkap: ${missingAutoMap.map((key) => columnLabels[key]).join(", ")}. Pilih manual dropdown mapping di bawah area upload, lalu klik Simpan ke Supabase lagi.`,
+            "error"
+          );
         } else {
-          showAdminMessage(`File berhasil dibaca dari baris header ke-${parsed.headerRowNumber}. Mapping kolom wajib sudah terdeteksi otomatis. Silakan cek preview, lalu simpan.`, "success");
+          showAdminMessage(
+            `File berhasil dibaca dari baris header ke-${parsed.headerRowNumber}. Mapping kolom wajib sudah terdeteksi otomatis. Silakan cek preview, lalu simpan.`,
+            "success"
+          );
         }
       } catch (error) {
         console.error("Gagal membaca file:", error);
@@ -716,6 +851,7 @@ create policy "allow anon delete by batch"
 
       const required = ["customer_name", "transaction_date", "item_name", "qty"];
       const missing = required.filter((key) => !columnMap[key]);
+
       if (missing.length) {
         document.querySelectorAll("[data-map-key]").forEach((select) => {
           const isMissing = missing.includes(select.dataset.mapKey);
@@ -723,11 +859,13 @@ create policy "allow anon delete by batch"
           select.classList.toggle("ring-4", isMissing);
           select.classList.toggle("ring-rose-100", isMissing);
         });
+
         const headerList = uploadedHeaders.length ? ` Header yang terbaca: ${uploadedHeaders.join(", ")}.` : "";
         throw new Error(`Kolom wajib belum lengkap: ${missing.map((key) => columnLabels[key]).join(", ")}. Pilih manual kolom tersebut di dropdown mapping.${headerList}`);
       }
 
       const batchName = $("batchName").value.trim() || `Upload ${new Date().toISOString().slice(0, 10)}`;
+
       return uploadedRows.map((row) => ({
         batch_name: batchName,
         sales_name: columnMap.sales_name ? String(row[columnMap.sales_name] || "Tidak ada sales").trim() : "Tidak ada sales",
@@ -750,22 +888,29 @@ create policy "allow anon delete by batch"
         if (!mappedRows.length) throw new Error("Tidak ada baris valid untuk disimpan.");
 
         const batchName = mappedRows[0].batch_name;
+
         if ($("saveMode").value === "replace_batch") {
           const { error: deleteError } = await supabaseClient
             .from("sales_purchase_history")
             .delete()
             .eq("batch_name", batchName);
+
           if (deleteError) throw deleteError;
         }
 
         const chunkSize = 500;
+
         for (let i = 0; i < mappedRows.length; i += chunkSize) {
           const chunk = mappedRows.slice(i, i + chunkSize);
-          const { error } = await supabaseClient.from("sales_purchase_history").insert(chunk);
+          const { error } = await supabaseClient
+            .from("sales_purchase_history")
+            .insert(chunk);
+
           if (error) throw error;
         }
 
         showAdminMessage(`${numberFormat.format(mappedRows.length)} baris berhasil disimpan ke Supabase pada batch "${batchName}".`, "success");
+
         await loadDataFromSupabase();
         setTab("sales");
       } catch (error) {
@@ -777,8 +922,10 @@ create policy "allow anon delete by batch"
     function useUploadAsDemo() {
       try {
         if (!uploadedRows.length) throw new Error("Belum ada file yang diupload.");
+
         rows = getMappedRows();
         checklistState = {};
+
         renderAll();
         showAdminMessage(`${numberFormat.format(rows.length)} baris dipakai sementara di browser. Data belum tersimpan ke Supabase.`, "success");
         setTab("sales");
@@ -790,27 +937,52 @@ create policy "allow anon delete by batch"
 
     function exportChecklist() {
       const summary = buildSummary();
-      const headers = ["Item", "Pembelian Terakhir", "Qty Terakhir", "Total Qty", "Frekuensi", "Invoice Terakhir", "Cek Fisik", "Catatan"];
-      const lines = [headers, ...summary.map((row) => [
-        row.item_name,
-        formatDate(row.last_date),
-        row.last_qty,
-        row.total_qty,
-        row.frequency,
-        row.last_invoice || "",
-        checklistState[row.item_name]?.checked ? "Sudah" : "Belum",
-        checklistState[row.item_name]?.note || ""
-      ])];
 
-      const csv = lines.map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+      const headers = [
+        "Item",
+        "Status",
+        "Pembelian Terakhir",
+        "Qty Terakhir",
+        "Total Qty",
+        "Frekuensi",
+        "Invoice Terakhir",
+        "Cek Fisik",
+        "Catatan"
+      ];
+
+      const lines = [
+        headers,
+        ...summary.map((row) => {
+          const status = getItemStatus(row);
+          return [
+            row.item_name,
+            status.label,
+            formatDate(row.last_date),
+            row.last_qty,
+            row.total_qty,
+            row.frequency,
+            row.last_invoice || "",
+            checklistState[row.item_name]?.checked ? "Sudah" : "Belum",
+            checklistState[row.item_name]?.note || ""
+          ];
+        })
+      ];
+
+      const csv = lines
+        .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+
       link.href = url;
       link.download = `checklist-${($("customerSelect").value || "toko").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.csv`;
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
     }
 
@@ -834,6 +1006,7 @@ create policy "allow anon delete by batch"
         if (!window.supabase?.createClient) {
           setConnectionStatus("Library Supabase gagal dimuat", "font-semibold text-rose-200");
         }
+
         renderAll();
       }
     }
@@ -846,22 +1019,36 @@ create policy "allow anon delete by batch"
     $("saveToSupabaseBtn").addEventListener("click", saveToSupabase);
     $("useUploadAsDemoBtn").addEventListener("click", useUploadAsDemo);
     $("exportChecklistBtn").addEventListener("click", exportChecklist);
-    $("salesSelect").addEventListener("change", () => { checklistState = {}; populateFilters(); renderSalesTable(); });
-    $("customerSelect").addEventListener("change", () => { checklistState = {}; renderSalesTable(); });
+
+    $("customerSelect").addEventListener("change", () => {
+      checklistState = {};
+      renderSalesTable();
+    });
+
     $("itemSearch").addEventListener("input", renderSalesTable);
-    $("sortSelect").addEventListener("change", renderSalesTable);
+    $("historyTypeSelect").addEventListener("change", renderSalesTable);
+
     $("itemSummaryBody").addEventListener("click", (event) => {
       const target = event.target.closest("[data-action='toggle-check']");
       if (!target) return;
+
       const item = target.dataset.item;
-      checklistState[item] = { ...checklistState[item], checked: !checklistState[item]?.checked };
+      checklistState[item] = {
+        ...checklistState[item],
+        checked: !checklistState[item]?.checked
+      };
+
       renderSalesTable();
     });
+
     $("itemSummaryBody").addEventListener("input", (event) => {
       if (event.target.dataset.action !== "update-note") return;
+
       const item = event.target.dataset.item;
-      checklistState[item] = { ...checklistState[item], note: event.target.value };
-      renderSalesTable();
+      checklistState[item] = {
+        ...checklistState[item],
+        note: event.target.value
+      };
     });
 
     initializeSupabaseFromStorageOrDefault();
