@@ -126,11 +126,10 @@
                 <th class="px-5 py-3">Item</th>
                 <th class="px-5 py-3">Status</th>
                 <th class="px-5 py-3">Terakhir Beli</th>
-                <th class="px-5 py-3 text-right">Qty Terakhir</th>
-                <th class="px-5 py-3 text-right">Total Qty</th>
-                <th class="px-5 py-3 text-right">Frekuensi</th>
-                <th class="px-5 py-3">Invoice Terakhir</th>
-                <th class="px-5 py-3">Catatan Fisik</th>
+<th class="px-5 py-3 text-right">Jumlah Hari</th>
+<th class="px-5 py-3 text-right">Qty Terakhir</th>
+<th class="px-5 py-3 text-right">Total Qty</th>
+<th class="px-5 py-3 text-right">Frekuensi</th>
               </tr>
             </thead>
             <tbody id="itemSummaryBody" class="divide-y divide-slate-100 bg-white"></tbody>
@@ -767,15 +766,14 @@ create policy "allow anon delete by batch"
       $("statChecked").textContent = `${numberFormat.format(checkedCount)} / ${numberFormat.format(summary.length)}`;
 
       if (!summary.length) {
-        $("itemSummaryBody").innerHTML = `<tr><td colspan="9" class="px-5 py-12 text-center text-slate-500">Tidak ada data untuk filter ini.</td></tr>`;
+        $("itemSummaryBody").innerHTML = `<tr><td colspan="8" class="px-5 py-12 text-center text-slate-500">Tidak ada data untuk filter ini.</td></tr>`;
         return;
       }
 
       $("itemSummaryBody").innerHTML = summary.map((row) => {
         const checked = checklistState[row.item_name]?.checked;
-        const note = checklistState[row.item_name]?.note || "";
-        const age = daysSince(row.last_date);
-        const status = getItemStatus(row);
+const age = daysSince(row.last_date);
+const status = getItemStatus(row);
 
         return `
           <tr class="${checked ? "bg-emerald-50/60" : "hover:bg-slate-50"}">
@@ -792,15 +790,11 @@ create policy "allow anon delete by batch"
               <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${status.className}">${escapeHtml(status.label)}</span>
             </td>
 
-            <td class="px-5 py-4 align-top text-slate-700">${formatDate(row.last_date)}</td>
-            <td class="px-5 py-4 text-right align-top font-medium text-slate-950">${numberFormat.format(row.last_qty)}</td>
-            <td class="px-5 py-4 text-right align-top text-slate-700">${numberFormat.format(row.total_qty)}</td>
-            <td class="px-5 py-4 text-right align-top text-slate-700">${numberFormat.format(row.frequency)}x</td>
-            <td class="px-5 py-4 align-top text-slate-700">${escapeHtml(row.last_invoice || "-")}</td>
-
-            <td class="px-5 py-4 align-top">
-              <input data-action="update-note" data-item="${escapeHtml(row.item_name)}" value="${escapeHtml(note)}" placeholder="Contoh: stok tinggal 2, perlu reorder" class="min-w-64 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" />
-            </td>
+           <td class="px-5 py-4 align-top text-slate-700">${formatDate(row.last_date)}</td>
+<td class="px-5 py-4 text-right align-top font-semibold text-slate-950">${age === null ? "-" : `${numberFormat.format(age)} hari`}</td>
+<td class="px-5 py-4 text-right align-top font-medium text-slate-950">${numberFormat.format(row.last_qty)}</td>
+<td class="px-5 py-4 text-right align-top text-slate-700">${numberFormat.format(row.total_qty)}</td>
+<td class="px-5 py-4 text-right align-top text-slate-700">${numberFormat.format(row.frequency)}x</td>
           </tr>`;
       }).join("");
     }
@@ -994,55 +988,55 @@ create policy "allow anon delete by batch"
     }
 
     function exportChecklist() {
-      const summary = buildSummary();
+  const summary = buildSummary();
 
-      const headers = [
-        "Item",
-        "Status",
-        "Pembelian Terakhir",
-        "Qty Terakhir",
-        "Total Qty",
-        "Frekuensi",
-        "Invoice Terakhir",
-        "Cek Fisik",
-        "Catatan"
+  const headers = [
+    "Item",
+    "Status",
+    "Pembelian Terakhir",
+    "Jumlah Hari",
+    "Qty Terakhir",
+    "Total Qty",
+    "Frekuensi",
+    "Cek Fisik"
+  ];
+
+  const lines = [
+    headers,
+    ...summary.map((row) => {
+      const status = getItemStatus(row);
+      const age = daysSince(row.last_date);
+
+      return [
+        row.item_name,
+        status.label,
+        formatDate(row.last_date),
+        age === null ? "" : age,
+        row.last_qty,
+        row.total_qty,
+        row.frequency,
+        checklistState[row.item_name]?.checked ? "Sudah" : "Belum"
       ];
+    })
+  ];
 
-      const lines = [
-        headers,
-        ...summary.map((row) => {
-          const status = getItemStatus(row);
-          return [
-            row.item_name,
-            status.label,
-            formatDate(row.last_date),
-            row.last_qty,
-            row.total_qty,
-            row.frequency,
-            row.last_invoice || "",
-            checklistState[row.item_name]?.checked ? "Sudah" : "Belum",
-            checklistState[row.item_name]?.note || ""
-          ];
-        })
-      ];
+  const csv = lines
+    .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
 
-      const csv = lines
-        .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-        .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
 
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
+  link.href = url;
+  link.download = `checklist-${($("customerSelect").value || "toko").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.csv`;
 
-      link.href = url;
-      link.download = `checklist-${($("customerSelect").value || "toko").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      URL.revokeObjectURL(url);
-    }
+  URL.revokeObjectURL(url);
+}
 
     function initializeSupabaseFromStorageOrDefault() {
       const savedUrl = localStorage.getItem(STORAGE_KEYS.supabaseUrl) || DEFAULT_SUPABASE_URL;
@@ -1099,17 +1093,7 @@ create policy "allow anon delete by batch"
       renderSalesTable();
     });
 
-    $("itemSummaryBody").addEventListener("input", (event) => {
-      if (event.target.dataset.action !== "update-note") return;
-
-      const item = event.target.dataset.item;
-      checklistState[item] = {
-        ...checklistState[item],
-        note: event.target.value
-      };
-    });
-
-    initializeSupabaseFromStorageOrDefault();
+      initializeSupabaseFromStorageOrDefault();
   </script>
 </body>
 </html>
