@@ -372,8 +372,8 @@ create policy "allow anon delete by batch"
         return;
       }
       supabaseClient = supabase.createClient(url, anonKey);
-      localStorage.setItem("sales_dashboard_supabase_url", url);
-      localStorage.setItem("sales_dashboard_supabase_anon_key", anonKey);
+      localStorage.setItem("https://mitjosxpyeydjdrpuszl.supabase.co");
+      localStorage.setItem("sb_publishable_-wwqDu_np893Rg32XajLEQ_w0-5MvBD");
       $("connectionStatus").textContent = "Mengecek...";
       $("connectionStatus").className = "font-semibold text-amber-200";
       await loadDataFromSupabase();
