@@ -345,29 +345,59 @@ create policy "allow anon delete by batch"
     }
 
     function parseDate(value) {
-      if (!value && value !== 0) return null;
-      if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
-      if (typeof value === "number") return excelSerialToDate(value);
+  if (!value && value !== 0) return null;
 
-      const text = String(value).trim();
-      if (!text) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
 
-      const iso = new Date(text);
-      if (!Number.isNaN(iso.getTime())) return iso;
+  if (typeof value === "number") {
+    return excelSerialToDate(value);
+  }
 
-      const parts = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
-      if (parts) {
-        const day = Number(parts[1]);
-        const month = Number(parts[2]) - 1;
-        let year = Number(parts[3]);
-        if (year < 100) year += 2000;
-        const parsed = new Date(year, month, day);
-        if (!Number.isNaN(parsed.getTime())) return parsed;
-      }
+  const text = String(value).trim();
+  if (!text) return null;
 
-      return null;
+  // Format Indonesia: DD/MM/YY, DD/MM/YYYY, DD-MM-YY, DD-MM-YYYY
+  // Ini harus dicek sebelum new Date(), supaya 09/12/25 dibaca 9 Desember 2025, bukan 12 September 2025.
+  const indoDate = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+  if (indoDate) {
+    const day = Number(indoDate[1]);
+    const month = Number(indoDate[2]) - 1;
+    let year = Number(indoDate[3]);
+
+    if (year < 100) year += 2000;
+
+    const parsed = new Date(year, month, day);
+
+    if (
+      !Number.isNaN(parsed.getTime()) &&
+      parsed.getFullYear() === year &&
+      parsed.getMonth() === month &&
+      parsed.getDate() === day
+    ) {
+      return parsed;
     }
 
+    return null;
+  }
+
+  // Format ISO dari Supabase: YYYY-MM-DD
+  const isoDate = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoDate) {
+    const year = Number(isoDate[1]);
+    const month = Number(isoDate[2]) - 1;
+    const day = Number(isoDate[3]);
+    const parsed = new Date(year, month, day);
+
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  const fallback = new Date(text);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+}
     function toDateString(value) {
       const date = parseDate(value);
       if (!date) return null;
@@ -539,36 +569,52 @@ create policy "allow anon delete by batch"
     }
 
     async function loadDataFromSupabase() {
-      if (!supabaseClient) {
-        rows = [...demoRows];
-        renderAll();
-        return;
-      }
+  if (!supabaseClient) {
+    rows = [...demoRows];
+    renderAll();
+    return;
+  }
 
-      try {
-        const { data, error } = await supabaseClient
-          .from("sales_purchase_history")
-          .select("id,batch_name,sales_name,customer_name,transaction_date,item_name,qty,invoice_no,sales_value,uploaded_at")
-          .order("transaction_date", { ascending: false });
+  try {
+    const pageSize = 1000;
+    let from = 0;
+    let allRows = [];
 
-        if (error) throw error;
+    while (true) {
+      const to = from + pageSize - 1;
 
-        rows = data && data.length ? data : [...demoRows];
+      const { data, error } = await supabaseClient
+        .from("sales_purchase_history")
+        .select("id,batch_name,sales_name,customer_name,transaction_date,item_name,qty,invoice_no,sales_value,uploaded_at")
+        .order("transaction_date", { ascending: false })
+        .range(from, to);
 
-        setConnectionStatus(
-          data && data.length ? "Tersambung" : "Tersambung, data kosong",
-          "font-semibold text-emerald-200"
-        );
+      if (error) throw error;
 
-        renderAll();
-      } catch (error) {
-        console.error("Gagal mengambil data Supabase:", error);
-        rows = [...demoRows];
-        setConnectionStatus("Gagal konek, pakai demo", "font-semibold text-rose-200");
-        showAdminMessage(`Gagal mengambil data Supabase: ${error.message}`, "error");
-        renderAll();
-      }
+      const batch = data || [];
+      allRows = allRows.concat(batch);
+
+      if (batch.length < pageSize) break;
+
+      from += pageSize;
     }
+
+    rows = allRows.length ? allRows : [...demoRows];
+
+    setConnectionStatus(
+      allRows.length ? `Tersambung, ${numberFormat.format(allRows.length)} rows terbaca` : "Tersambung, data kosong",
+      "font-semibold text-emerald-200"
+    );
+
+    renderAll();
+  } catch (error) {
+    console.error("Gagal mengambil data Supabase:", error);
+    rows = [...demoRows];
+    setConnectionStatus("Gagal konek, pakai demo", "font-semibold text-rose-200");
+    showAdminMessage(`Gagal mengambil data Supabase: ${error.message}`, "error");
+    renderAll();
+  }
+}
 
     function uniqueSorted(values) {
       return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
@@ -867,16 +913,28 @@ create policy "allow anon delete by batch"
       const batchName = $("batchName").value.trim() || `Upload ${new Date().toISOString().slice(0, 10)}`;
 
       return uploadedRows.map((row) => ({
-        batch_name: batchName,
-        sales_name: columnMap.sales_name ? String(row[columnMap.sales_name] || "Tidak ada sales").trim() : "Tidak ada sales",
-        customer_name: String(row[columnMap.customer_name] || "").trim(),
-        transaction_date: toDateString(row[columnMap.transaction_date]),
-        item_name: String(row[columnMap.item_name] || "").trim(),
-        qty: parseNumber(row[columnMap.qty]),
-        invoice_no: columnMap.invoice_no ? String(row[columnMap.invoice_no] || "").trim() : "",
-        sales_value: columnMap.sales_value ? parseNumber(row[columnMap.sales_value]) : 0,
-        raw_data: row
-      })).filter((row) => row.customer_name && row.item_name);
+  batch_name: batchName,
+  sales_name: columnMap.sales_name ? String(row[columnMap.sales_name] || "Tidak ada sales").trim() : "Tidak ada sales",
+  customer_name: String(row[columnMap.customer_name] || "").trim(),
+  transaction_date: toDateString(row[columnMap.transaction_date]),
+  item_name: String(row[columnMap.item_name] || "").trim(),
+  qty: parseNumber(row[columnMap.qty]),
+  invoice_no: columnMap.invoice_no ? String(row[columnMap.invoice_no] || "").trim() : "",
+  sales_value: columnMap.sales_value ? parseNumber(row[columnMap.sales_value]) : 0,
+  raw_data: row
+})).filter((row) => {
+  const customer = normalizeText(row.customer_name);
+  const item = normalizeText(row.item_name);
+
+  if (!customer || !item) return false;
+  if (!row.transaction_date) return false;
+
+  // Skip baris judul/separator dari report Excel, misalnya "PENJUALAN IDR".
+  if (customer.includes("penjualan idr")) return false;
+  if (item.includes("penjualan idr")) return false;
+
+  return true;
+});
     }
 
     async function saveToSupabase() {
