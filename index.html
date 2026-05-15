@@ -39,12 +39,12 @@
           <input id="supabaseUrl" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" placeholder="https://xxxx.supabase.co" />
         </label>
         <label class="block">
-          <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Supabase Anon Key</span>
-          <input id="supabaseAnonKey" type="password" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" placeholder="eyJ..." />
+          <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Supabase Publishable / Anon Key</span>
+          <input id="supabaseAnonKey" type="password" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100" placeholder="sb_publishable_... atau eyJ..." />
         </label>
         <button id="connectSupabaseBtn" class="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">Connect</button>
       </div>
-      <p class="mt-3 text-xs leading-5 text-slate-500">Untuk publish di Vercel, nilai URL dan Anon Key bisa ditaruh di file ini, atau lebih aman dibuat melalui build environment. Jangan pernah menaruh Supabase service role key di HTML/browser.</p>
+      <p class="mt-3 text-xs leading-5 text-slate-500">Nilai URL dan publishable/anon key boleh ada di HTML/browser. Jangan pernah menaruh Supabase service role key di HTML/browser.</p>
     </section>
 
     <section class="mb-5 flex flex-wrap gap-2">
@@ -229,6 +229,14 @@ create policy "allow anon delete by batch"
   </main>
 
   <script>
+    const DEFAULT_SUPABASE_URL = "https://mitjosxpyeydjdrpuszl.supabase.co";
+    const DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_-wwqDu_np893Rg32XajLEQ_w0-5MvBD";
+
+    const STORAGE_KEYS = {
+      supabaseUrl: "sales_dashboard_supabase_url",
+      supabaseAnonKey: "sales_dashboard_supabase_anon_key"
+    };
+
     const demoRows = [
       { sales_name: "Andi", customer_name: "Toko Sinar Jaya", transaction_date: "2026-04-25", item_name: "Beras Premium 5kg", qty: 12, invoice_no: "INV-001", sales_value: 780000 },
       { sales_name: "Andi", customer_name: "Toko Sinar Jaya", transaction_date: "2026-04-25", item_name: "Minyak Goreng 1L", qty: 24, invoice_no: "INV-001", sales_value: 384000 },
@@ -242,13 +250,27 @@ create policy "allow anon delete by batch"
     ];
 
     const candidateMap = {
-      sales_name: ["sales", "nama sales", "salesman", "spg", "user", "marketing"],
-      customer_name: ["customer", "nama customer", "toko", "nama toko", "outlet", "pelanggan", "cust", "ship to", "bill to", "nama pelanggan"],
-      transaction_date: ["tanggal", "tgl", "date", "transaction date", "tanggal invoice", "tgl invoice", "invoice date", "order date", "tanggal order"],
-      item_name: ["item", "nama item", "produk", "product", "barang", "nama barang", "sku", "description", "deskripsi", "item name"],
-      qty: ["qty", "quantity", "jumlah", "jumlah qty", "pcs", "ctn", "carton", "kuantitas", "ambil", "order qty"],
-      invoice_no: ["invoice", "no invoice", "nomor invoice", "nota", "no nota", "order no", "so", "no so", "nomor"],
-      sales_value: ["nilai", "amount", "total", "net", "subtotal", "grand total", "harga", "rupiah", "sales value"]
+      sales_name: [
+        "sales", "nama sales", "salesman", "nama salesman", "sales person", "sales rep", "kode sales", "marketing", "spg", "nama spg", "user", "pic", "spv", "asm"
+      ],
+      customer_name: [
+        "customer", "nama customer", "customer name", "cust", "nama cust", "cust name", "kode customer", "kode cust", "toko", "nama toko", "kode toko", "outlet", "nama outlet", "kode outlet", "pelanggan", "nama pelanggan", "store", "nama store", "ship to", "bill to", "member", "nama member", "channel", "sub customer"
+      ],
+      transaction_date: [
+        "tanggal", "tgl", "date", "transaction date", "tanggal transaksi", "tgl transaksi", "tanggal invoice", "tgl invoice", "invoice date", "tanggal faktur", "tgl faktur", "order date", "tanggal order", "tgl order", "posting date", "delivery date", "doc date", "document date", "periode", "tanggal nota", "tgl nota"
+      ],
+      item_name: [
+        "item", "nama item", "item name", "kode item", "produk", "nama produk", "product", "product name", "barang", "nama barang", "kode barang", "sku", "description", "deskripsi", "nama sku", "material", "nama material", "article", "nama article", "variant", "nama variant"
+      ],
+      qty: [
+        "qty", "quantity", "jumlah", "jumlah qty", "kuantitas", "pcs", "pc", "ctn", "carton", "dus", "box", "ambil", "order qty", "qty order", "qty jual", "qty sales", "sold qty", "volume", "total qty", "jumlah beli", "qty beli"
+      ],
+      invoice_no: [
+        "invoice", "no invoice", "nomor invoice", "invoice no", "invoice number", "faktur", "no faktur", "nomor faktur", "nota", "no nota", "nomor nota", "order no", "so", "no so", "nomor", "doc no", "document no", "no dokumen"
+      ],
+      sales_value: [
+        "nilai", "amount", "total", "net", "nett", "subtotal", "grand total", "harga", "rupiah", "sales value", "value", "total value", "total harga", "nilai jual", "gross", "net sales", "dpp"
+      ]
     };
 
     const columnLabels = {
@@ -272,7 +294,9 @@ create policy "allow anon delete by batch"
     const numberFormat = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 });
     const dateFormat = new Intl.DateTimeFormat("id-ID", { day: "2-digit", month: "short", year: "numeric" });
 
-    function $(id) { return document.getElementById(id); }
+    function $(id) {
+      return document.getElementById(id);
+    }
 
     function normalizeText(value) {
       return String(value || "").toLowerCase().replace(/[._/-]/g, " ").replace(/\s+/g, " ").trim();
@@ -343,10 +367,84 @@ create policy "allow anon delete by batch"
         if (exact) return exact.raw;
       }
       for (const candidate of candidates) {
-        const partial = normalized.find((header) => header.normalized.includes(candidate) || candidate.includes(header.normalized));
-        if (partial) return partial.raw;
+        const wordMatch = normalized.find((header) => {
+          const headerWords = ` ${header.normalized} `;
+          const candidateWords = ` ${candidate} `;
+          return headerWords.includes(candidateWords) || candidateWords.includes(headerWords);
+        });
+        if (wordMatch) return wordMatch.raw;
       }
       return "";
+    }
+
+    function scoreHeaderRow(cells) {
+      const headers = cells.map((cell) => String(cell || "").trim()).filter(Boolean);
+      if (!headers.length) return 0;
+      let score = 0;
+      Object.values(candidateMap).forEach((candidates) => {
+        if (detectColumn(headers, candidates)) score += 1;
+      });
+      return score;
+    }
+
+    function rowsFromWorksheetSmart(worksheet) {
+      const matrix = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "", raw: true });
+      if (!matrix.length) return { headers: [], dataRows: [] };
+
+      let bestHeaderIndex = 0;
+      let bestScore = -1;
+      const maxScan = Math.min(matrix.length, 15);
+      for (let i = 0; i < maxScan; i += 1) {
+        const score = scoreHeaderRow(matrix[i]);
+        if (score > bestScore) {
+          bestScore = score;
+          bestHeaderIndex = i;
+        }
+      }
+
+      let headers = matrix[bestHeaderIndex].map((cell, index) => {
+        const label = String(cell || "").trim();
+        return label || `Kolom ${index + 1}`;
+      });
+
+      const seen = new Map();
+      headers = headers.map((header) => {
+        const count = seen.get(header) || 0;
+        seen.set(header, count + 1);
+        return count ? `${header} ${count + 1}` : header;
+      });
+
+      const dataRows = matrix.slice(bestHeaderIndex + 1)
+        .filter((line) => line.some((cell) => String(cell ?? "").trim() !== ""))
+        .map((line) => {
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header] = line[index] ?? "";
+          });
+          return row;
+        });
+
+      return { headers, dataRows, headerRowNumber: bestHeaderIndex + 1, score: bestScore };
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function setConnectionStatus(message, className) {
+      $("connectionStatus").textContent = message;
+      $("connectionStatus").className = className;
+    }
+
+    function showAdminMessage(message, type = "info") {
+      const color = type === "error" ? "bg-rose-50 text-rose-800" : type === "success" ? "bg-emerald-50 text-emerald-800" : "bg-slate-50 text-slate-600";
+      $("adminMessage").className = `mt-4 rounded-2xl p-4 text-sm leading-6 ${color}`;
+      $("adminMessage").textContent = message;
     }
 
     function setTab(active) {
@@ -357,50 +455,62 @@ create policy "allow anon delete by batch"
       $("adminTabBtn").className = `${!isSales ? "tab-active" : "tab-inactive ring-1 ring-slate-200 hover:bg-slate-50"} rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition`;
     }
 
-    function showAdminMessage(message, type = "info") {
-      const color = type === "error" ? "bg-rose-50 text-rose-800" : type === "success" ? "bg-emerald-50 text-emerald-800" : "bg-slate-50 text-slate-600";
-      $("adminMessage").className = `mt-4 rounded-2xl p-4 text-sm leading-6 ${color}`;
-      $("adminMessage").textContent = message;
-    }
-
     async function connectSupabase() {
       const url = $("supabaseUrl").value.trim();
       const anonKey = $("supabaseAnonKey").value.trim();
+
       if (!url || !anonKey) {
-        $("connectionStatus").textContent = "Isi URL dan Anon Key";
-        $("connectionStatus").className = "font-semibold text-amber-200";
+        setConnectionStatus("Isi URL dan Anon Key", "font-semibold text-amber-200");
         return;
       }
-      supabaseClient = supabase.createClient(url, anonKey);
-      localStorage.setItem("https://mitjosxpyeydjdrpuszl.supabase.co");
-      localStorage.setItem("sb_publishable_-wwqDu_np893Rg32XajLEQ_w0-5MvBD");
-      $("connectionStatus").textContent = "Mengecek...";
-      $("connectionStatus").className = "font-semibold text-amber-200";
-      await loadDataFromSupabase();
+
+      if (!window.supabase?.createClient) {
+        setConnectionStatus("Library Supabase gagal dimuat", "font-semibold text-rose-200");
+        showAdminMessage("Library Supabase belum berhasil dimuat. Cek koneksi internet atau CDN Supabase.", "error");
+        renderAll();
+        return;
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEYS.supabaseUrl, url);
+        localStorage.setItem(STORAGE_KEYS.supabaseAnonKey, anonKey);
+        supabaseClient = window.supabase.createClient(url, anonKey);
+        setConnectionStatus("Mengecek...", "font-semibold text-amber-200");
+        await loadDataFromSupabase();
+      } catch (error) {
+        console.error("Gagal connect Supabase:", error);
+        supabaseClient = null;
+        setConnectionStatus("Gagal konek", "font-semibold text-rose-200");
+        showAdminMessage(`Gagal connect Supabase: ${error.message}`, "error");
+        renderAll();
+      }
     }
 
     async function loadDataFromSupabase() {
       if (!supabaseClient) {
+        rows = [...demoRows];
         renderAll();
         return;
       }
-      const { data, error } = await supabaseClient
-        .from("sales_purchase_history")
-        .select("id,batch_name,sales_name,customer_name,transaction_date,item_name,qty,invoice_no,sales_value,uploaded_at")
-        .order("transaction_date", { ascending: false });
 
-      if (error) {
-        $("connectionStatus").textContent = "Gagal konek, pakai demo";
-        $("connectionStatus").className = "font-semibold text-rose-200";
+      try {
+        const { data, error } = await supabaseClient
+          .from("sales_purchase_history")
+          .select("id,batch_name,sales_name,customer_name,transaction_date,item_name,qty,invoice_no,sales_value,uploaded_at")
+          .order("transaction_date", { ascending: false });
+
+        if (error) throw error;
+
+        rows = data && data.length ? data : [...demoRows];
+        setConnectionStatus(data && data.length ? "Tersambung" : "Tersambung, data kosong", "font-semibold text-emerald-200");
+        renderAll();
+      } catch (error) {
+        console.error("Gagal mengambil data Supabase:", error);
+        rows = [...demoRows];
+        setConnectionStatus("Gagal konek, pakai demo", "font-semibold text-rose-200");
         showAdminMessage(`Gagal mengambil data Supabase: ${error.message}`, "error");
         renderAll();
-        return;
       }
-
-      rows = data && data.length ? data : [...demoRows];
-      $("connectionStatus").textContent = data && data.length ? "Tersambung" : "Tersambung, data kosong";
-      $("connectionStatus").className = "font-semibold text-emerald-200";
-      renderAll();
     }
 
     function uniqueSorted(values) {
@@ -411,12 +521,14 @@ create policy "allow anon delete by batch"
       const selectedSales = $("salesSelect").value || "Semua sales";
       const selectedCustomer = $("customerSelect").value;
       const salesOptions = ["Semua sales", ...uniqueSorted(rows.map((row) => row.sales_name || "Tidak ada sales"))];
+
       $("salesSelect").innerHTML = salesOptions.map((sales) => `<option value="${escapeHtml(sales)}">${escapeHtml(sales)}</option>`).join("");
       $("salesSelect").value = salesOptions.includes(selectedSales) ? selectedSales : "Semua sales";
 
       const salesFilter = $("salesSelect").value;
       const customerRows = salesFilter === "Semua sales" ? rows : rows.filter((row) => (row.sales_name || "Tidak ada sales") === salesFilter);
       const customers = uniqueSorted(customerRows.map((row) => row.customer_name));
+
       $("customerSelect").innerHTML = customers.length
         ? customers.map((customer) => `<option value="${escapeHtml(customer)}">${escapeHtml(customer)}</option>`).join("")
         : `<option value="">Tidak ada toko</option>`;
@@ -436,9 +548,11 @@ create policy "allow anon delete by batch"
     function buildSummary() {
       const selectedRows = getSelectedRows();
       const groups = new Map();
+
       selectedRows.forEach((row) => {
         const key = normalizeText(row.item_name);
         if (!key) return;
+
         if (!groups.has(key)) {
           groups.set(key, {
             item_name: row.item_name,
@@ -451,6 +565,7 @@ create policy "allow anon delete by batch"
             last_value: 0
           });
         }
+
         const group = groups.get(key);
         const qty = parseNumber(row.qty);
         const value = parseNumber(row.sales_value);
@@ -458,6 +573,7 @@ create policy "allow anon delete by batch"
         group.total_qty += qty;
         group.total_value += value;
         group.frequency += 1;
+
         if (date && (!group.last_date || date > parseDate(group.last_date))) {
           group.last_date = toDateString(date);
           group.last_qty = qty;
@@ -477,6 +593,7 @@ create policy "allow anon delete by batch"
         if (sortBy === "name") return a.item_name.localeCompare(b.item_name);
         return (parseDate(b.last_date)?.getTime() || 0) - (parseDate(a.last_date)?.getTime() || 0);
       });
+
       return summary;
     }
 
@@ -557,15 +674,39 @@ create policy "allow anon delete by batch"
     async function handleFileUpload(event) {
       const file = event.target.files?.[0];
       if (!file) return;
-      $("uploadFileName").textContent = file.name;
-      const buffer = await file.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      uploadedRows = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: true });
-      uploadedHeaders = uploadedRows.length ? Object.keys(uploadedRows[0]) : [];
-      createMappingControls();
-      renderPreview();
-      showAdminMessage(`File berhasil dibaca: ${file.name}. Silakan cek mapping kolom sebelum simpan.`, "success");
+
+      if (!window.XLSX?.read) {
+        showAdminMessage("Library XLSX belum berhasil dimuat. Cek koneksi internet atau CDN XLSX.", "error");
+        return;
+      }
+
+      try {
+        $("uploadFileName").textContent = file.name;
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: "array", cellDates: true });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const parsed = rowsFromWorksheetSmart(worksheet);
+
+        uploadedRows = parsed.dataRows;
+        uploadedHeaders = parsed.headers;
+
+        if (!uploadedRows.length || !uploadedHeaders.length) {
+          throw new Error("File terbaca, tetapi tidak ada baris data yang bisa diproses. Pastikan sheet pertama berisi tabel data.");
+        }
+
+        createMappingControls();
+        renderPreview();
+
+        const missingAutoMap = ["customer_name", "transaction_date", "item_name", "qty"].filter((key) => !columnMap[key]);
+        if (missingAutoMap.length) {
+          showAdminMessage(`File berhasil dibaca dari baris header ke-${parsed.headerRowNumber}, tetapi mapping wajib belum lengkap: ${missingAutoMap.map((key) => columnLabels[key]).join(", ")}. Pilih manual dropdown mapping di bawah area upload, lalu klik Simpan ke Supabase lagi.`, "error");
+        } else {
+          showAdminMessage(`File berhasil dibaca dari baris header ke-${parsed.headerRowNumber}. Mapping kolom wajib sudah terdeteksi otomatis. Silakan cek preview, lalu simpan.`, "success");
+        }
+      } catch (error) {
+        console.error("Gagal membaca file:", error);
+        showAdminMessage(`Gagal membaca file: ${error.message}`, "error");
+      }
     }
 
     function getMappedRows() {
@@ -576,7 +717,14 @@ create policy "allow anon delete by batch"
       const required = ["customer_name", "transaction_date", "item_name", "qty"];
       const missing = required.filter((key) => !columnMap[key]);
       if (missing.length) {
-        throw new Error(`Kolom wajib belum lengkap: ${missing.map((key) => columnLabels[key]).join(", ")}`);
+        document.querySelectorAll("[data-map-key]").forEach((select) => {
+          const isMissing = missing.includes(select.dataset.mapKey);
+          select.classList.toggle("border-rose-400", isMissing);
+          select.classList.toggle("ring-4", isMissing);
+          select.classList.toggle("ring-rose-100", isMissing);
+        });
+        const headerList = uploadedHeaders.length ? ` Header yang terbaca: ${uploadedHeaders.join(", ")}.` : "";
+        throw new Error(`Kolom wajib belum lengkap: ${missing.map((key) => columnLabels[key]).join(", ")}. Pilih manual kolom tersebut di dropdown mapping.${headerList}`);
       }
 
       const batchName = $("batchName").value.trim() || `Upload ${new Date().toISOString().slice(0, 10)}`;
@@ -597,6 +745,7 @@ create policy "allow anon delete by batch"
       try {
         if (!supabaseClient) throw new Error("Supabase belum tersambung. Isi URL dan Anon Key lalu klik Connect.");
         if (!uploadedRows.length) throw new Error("Belum ada file yang diupload.");
+
         const mappedRows = getMappedRows();
         if (!mappedRows.length) throw new Error("Tidak ada baris valid untuk disimpan.");
 
@@ -620,6 +769,7 @@ create policy "allow anon delete by batch"
         await loadDataFromSupabase();
         setTab("sales");
       } catch (error) {
+        console.error("Gagal simpan ke Supabase:", error);
         showAdminMessage(error.message, "error");
       }
     }
@@ -633,6 +783,7 @@ create policy "allow anon delete by batch"
         showAdminMessage(`${numberFormat.format(rows.length)} baris dipakai sementara di browser. Data belum tersimpan ke Supabase.`, "success");
         setTab("sales");
       } catch (error) {
+        console.error("Gagal pakai upload sebagai demo:", error);
         showAdminMessage(error.message, "error");
       }
     }
@@ -650,6 +801,7 @@ create policy "allow anon delete by batch"
         checklistState[row.item_name]?.checked ? "Sudah" : "Belum",
         checklistState[row.item_name]?.note || ""
       ])];
+
       const csv = lines.map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
@@ -662,13 +814,28 @@ create policy "allow anon delete by batch"
       URL.revokeObjectURL(url);
     }
 
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    function initializeSupabaseFromStorageOrDefault() {
+      const savedUrl = localStorage.getItem(STORAGE_KEYS.supabaseUrl) || DEFAULT_SUPABASE_URL;
+      const savedKey = localStorage.getItem(STORAGE_KEYS.supabaseAnonKey) || DEFAULT_SUPABASE_ANON_KEY;
+
+      $("supabaseUrl").value = savedUrl;
+      $("supabaseAnonKey").value = savedKey;
+
+      if (savedUrl && savedKey && window.supabase?.createClient) {
+        try {
+          supabaseClient = window.supabase.createClient(savedUrl, savedKey);
+          loadDataFromSupabase();
+        } catch (error) {
+          console.error("Gagal inisialisasi Supabase:", error);
+          setConnectionStatus("Gagal inisialisasi", "font-semibold text-rose-200");
+          renderAll();
+        }
+      } else {
+        if (!window.supabase?.createClient) {
+          setConnectionStatus("Library Supabase gagal dimuat", "font-semibold text-rose-200");
+        }
+        renderAll();
+      }
     }
 
     $("salesTabBtn").addEventListener("click", () => setTab("sales"));
@@ -697,16 +864,7 @@ create policy "allow anon delete by batch"
       renderSalesTable();
     });
 
-    const savedUrl = localStorage.getItem("https://mitjosxpyeydjdrpuszl.supabase.co") || "";
-    const savedKey = localStorage.getItem("sb_publishable_-wwqDu_np893Rg32XajLEQ_w0-5MvBD") || "";
-    $("supabaseUrl").value = savedUrl;
-    $("supabaseAnonKey").value = savedKey;
-    if (savedUrl && savedKey) {
-      supabaseClient = supabase.createClient(savedUrl, savedKey);
-      loadDataFromSupabase();
-    } else {
-      renderAll();
-    }
+    initializeSupabaseFromStorageOrDefault();
   </script>
 </body>
 </html>
